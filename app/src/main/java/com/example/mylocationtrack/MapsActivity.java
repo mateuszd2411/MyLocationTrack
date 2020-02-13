@@ -25,6 +25,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.Arrays;
+
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
@@ -56,6 +58,27 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                try {
+                    String databaseLatitudeString = dataSnapshot.child("latitude").getValue().toString().substring(1, dataSnapshot.child("latitude").getValue().toString().length()-1);
+                    String databaseLongitudeString = dataSnapshot.child("longitude").getValue().toString().substring(1, dataSnapshot.child("longitude").getValue().toString().length()-1);
+
+                    String[] stringLat = databaseLatitudeString.split(", ");
+                    Arrays.sort(stringLat);
+                    String latitude = stringLat[stringLat.length-1].split("-")[1];
+
+                    String[] stringLong = databaseLongitudeString.split(", ");
+                    Arrays.sort(stringLong);
+                    String longitude = stringLong[stringLong.length-1].split("-")[1];
+
+                    LatLng latLng = new LatLng(Double.parseDouble(latitude), Double.parseDouble(longitude));
+
+                    mMap.addMarker(new MarkerOptions().position(latLng).title(latitude + " , " + longitude));
+                    mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
 
             }
 
@@ -135,8 +158,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
-    private void updateButtonOnclick(View view){
+    public void updateButtonOnclick(View view){
 
+        databaseReference.child("latitude").push().setValue(editTextLatitude.getText().toString());
+        databaseReference.child("longitude").push().setValue(editTextLongitude.getText().toString());
 
 
     }
